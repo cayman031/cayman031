@@ -4,16 +4,27 @@ from datetime import datetime
 
 
 def clean_html(raw_html: str) -> str:
-    """HTML 태그 제거하고 텍스트만 추출하는 함수"""
+    """HTML/Markdown 태그 제거하고 텍스트만 추출하는 함수"""
     if not raw_html:
         return ""
 
-    # HTML 태그 제거
+    # 1) HTML 태그 제거
     cleanr = re.compile("<.*?>")
     cleantext = re.sub(cleanr, "", raw_html)
 
-    # 줄바꿈/여러 공백을 하나의 공백으로 치환
+    # 2) Markdown 링크 [text](url) -> text
+    cleantext = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", cleantext)
+
+    # 3) 굵게/기울임 표시 제거 **text** -> text, *text* -> text
+    cleantext = re.sub(r"\*\*([^*]+)\*\*", r"\1", cleantext)
+    cleantext = re.sub(r"\*([^*]+)\*", r"\1", cleantext)
+
+    # 4) 인라인 코드 백틱 제거 `code` -> code
+    cleantext = cleantext.replace("`", "")
+
+    # 5) 줄바꿈/여러 공백을 하나의 공백으로 치환
     cleantext = re.sub(r"\s+", " ", cleantext)
+
     return cleantext.strip()
 
 
