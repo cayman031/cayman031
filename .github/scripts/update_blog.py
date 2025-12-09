@@ -9,30 +9,15 @@ def clean_html(raw_html: str) -> str:
     if not raw_html:
         return ""
 
-    # HTML 엔티티(&lt;, &gt;, &amp;) 해제
     text = html.unescape(raw_html)
-
-    # 1) HTML 태그 제거
     text = re.sub(r"<.*?>", "", text)
-
-    # 2) Markdown 링크 [text](url) -> text
-    text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
-
-    # 3) 굵게/기울임 표시 제거 **text**, *text*
-    text = re.sub(r"\*\*([^*]+)\*\*", r"\1", text)
-    text = re.sub(r"\*([^*]+)\*", r"\1", text)
-
-    # 4) 인라인 코드 백틱 제거
-    text = text.replace("`", "")
-
-    # 5) 공백 정리
     text = re.sub(r"\s+", " ", text)
-
     return text.strip()
 
 
 def get_thumbnail(entry) -> str:
-    """RSS 엔트리에서 썸네일 이미지 URL을 추출"""
+    """RSS 엔트리에서 썸네일 이미지 URL을 추출하는 함수"""
+
     def _normalize_url(url: str) -> str:
         if not url:
             return url
@@ -43,6 +28,7 @@ def get_thumbnail(entry) -> str:
             url = url.replace("http://", "https://")
         return url
 
+    # 1. media_thumbnail
     if hasattr(entry, "media_thumbnail"):
         try:
             url = entry.media_thumbnail[0].get("url")
@@ -52,6 +38,7 @@ def get_thumbnail(entry) -> str:
         except Exception:
             pass
 
+    # 2. enclosures
     if hasattr(entry, "enclosures") and entry.enclosures:
         for enclosure in entry.enclosures:
             if enclosure.get("type", "").startswith("image/"):
@@ -59,6 +46,7 @@ def get_thumbnail(entry) -> str:
                 if url:
                     return url
 
+    # 3. description 내 첫 번째 <img>
     if hasattr(entry, "description") and entry.description:
         img_match = re.search(r'<img[^>]+src="([^"]+)"', entry.description)
         if img_match:
@@ -66,6 +54,7 @@ def get_thumbnail(entry) -> str:
             if url:
                 return url
 
+    # 기본 이미지
     return "https://via.placeholder.com/300x200?text=No+Image"
 
 
@@ -105,31 +94,16 @@ def create_blog_table(feed_url: str, max_posts: int = 6) -> str:
             thumbnail = get_thumbnail(entry)
             title = clean_html(entry.title)
             link = entry.link
-
-            raw_desc = entry.get("description", "")
-            description = clean_html(raw_desc)
-
-            # 제목 제거 (description이 제목으로 시작하면)
-            if description.lower().startswith(title.lower()):
-                description = description[len(title):].lstrip(" -:|")
-
-            # 카테고리 태그 제거
-            description = re.sub(r"^\[[^\]]+\]\s*", "", description)
-
-            # 길이 제한
-            max_len = 80
-            if len(description) > max_len:
-                description = description[:max_len].rstrip() + "..."
-
             pub_date = format_date(entry.get("published", ""))
+
             safe_title = re.sub(r"[\[\]\(\)`]", "", title)
 
+            # description 제거 — 제목 + 이미지 + 날짜만 표시
             cell = (
                 f'<a href="{link}">'
                 f'<img src="{thumbnail}" alt="{safe_title}" width="300" height="200" />'
                 f"</a><br/>"
                 f'<strong><a href="{link}">{title}</a></strong><br/>'
-                f"{description}<br/>"
                 f"{pub_date}"
             )
 
