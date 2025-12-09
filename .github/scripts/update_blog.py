@@ -105,13 +105,15 @@ def create_blog_table(feed_url: str, max_posts: int = 6) -> str:
             # alt 텍스트에서 특수문자 제거 (렌더링 안정성)
             safe_title = re.sub(r"[\[\]\(\)`]", "", title)
 
-            # 셀 내용: 이미지 + 제목 + 설명 + 날짜
-            cell = f"""<a href="{link}">
-<img src="{thumbnail}" alt="{safe_title}" width="300" height="200" />
-</a><br/>
-**[{title}]({link})**  
-{description}  
-{pub_date}"""
+            # 셀 내용: "한 줄"짜리 문자열로 구성 (줄바꿈은 <br/> 로만)
+            cell = (
+                f'<a href="{link}">'
+                f'<img src="{thumbnail}" alt="{safe_title}" width="300" height="200" />'
+                f"</a><br/>"
+                f"**[{title}]({link})**<br/>"
+                f"{description}<br/>"
+                f"{pub_date}"
+            )
 
             row += f" {cell} |"
 
@@ -120,6 +122,7 @@ def create_blog_table(feed_url: str, max_posts: int = 6) -> str:
             row += " |"
             row_entries.append(None)
 
+        # 행 끝에는 실제 개행 문자 사용 (행과 행을 구분하기 위해서만)
         table += row + "\n"
 
     return table
