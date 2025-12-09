@@ -8,24 +8,25 @@ def clean_html(raw_html: str) -> str:
     if not raw_html:
         return ""
 
+    text = raw_html
+
     # 1) HTML 태그 제거
-    cleanr = re.compile("<.*?>")
-    cleantext = re.sub(cleanr, "", raw_html)
+    text = re.sub(r"<.*?>", "", text)
 
     # 2) Markdown 링크 [text](url) -> text
-    cleantext = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", cleantext)
+    text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
 
     # 3) 굵게/기울임 표시 제거 **text** -> text, *text* -> text
-    cleantext = re.sub(r"\*\*([^*]+)\*\*", r"\1", cleantext)
-    cleantext = re.sub(r"\*([^*]+)\*", r"\1", cleantext)
+    text = re.sub(r"\*\*([^*]+)\*\*", r"\1", text)
+    text = re.sub(r"\*([^*]+)\*", r"\1", text)
 
-    # 4) 인라인 코드 백틱 제거 `code` -> code
-    cleantext = cleantext.replace("`", "")
+    # 4) 인라인 코드 백틱 제거
+    text = text.replace("`", "")
 
-    # 5) 줄바꿈/여러 공백을 하나의 공백으로 치환
-    cleantext = re.sub(r"\s+", " ", cleantext)
+    # 5) 공백 정리
+    text = re.sub(r"\s+", " ", text)
 
-    return cleantext.strip()
+    return text.strip()
 
 
 def get_thumbnail(entry) -> str:
@@ -115,16 +116,33 @@ def create_blog_table(feed_url: str, max_posts: int = 6) -> str:
                 continue
 
             # 각 글의 정보 추출
-            thumbnail = get_thumbnail(entry)                    # 썸네일 이미지
-            title = entry.title                                 # 글 제목
-            link = entry.link                                   # 글 링크
-            description = clean_html(entry.get("description", ""))[:50] + "..."
+            thumbnail = get_thumbnail(entry)           # 썸네일 이미지
+            raw_title = entry.title                    # 원본 제목
+            title = clean_html(raw_title)              # HTML/마크다운 제거한 제목
+            link = entry.link                          # 글 링크
+
+            # 설명 원본 -> 정제
+            raw_desc = entry.get("description", "")
+            description = clean_html(raw_desc)
+
+            # 1) description 이 제목으로 시작하면 제목 부분 제거
+            if description.startswith(title):
+                description = description[len(title):].lstrip(" -:|")
+
+            # 2) 맨 앞의 카테고리 태그 형태([HTTP], [Web] 등) 제거
+            description = re.sub(r"^\[[^\]]+\]\s*", "", description)
+
+            # 3) 길이 제한
+            max_len = 80
+            if len(description) > max_len:
+                description = description[:max_len].rstrip() + "..."
+
             pub_date = format_date(entry.get("published", ""))  # 발행일
 
             # alt 텍스트에서 특수문자 제거
             safe_title = re.sub(r"[\[\]\(\)`]", "", title)
 
-            # 셀 내용: HTML만 사용 (마크다운 X)
+            # 셀 내용: HTML만 사용
             cell = (
                 f'<a href="{link}">'
                 f'<img src="{thumbnail}" alt="{safe_title}" width="300" height="200" />'
