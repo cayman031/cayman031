@@ -20,35 +20,45 @@ def clean_html(raw_html: str) -> str:
 def get_thumbnail(entry) -> str:
     """RSS 엔트리에서 썸네일 이미지 URL을 추출하는 함수"""
 
-    # 우선순위 1: RSS의 media:thumbnail 태그 확인
+    def _normalize_url(url: str) -> str:
+        """프로토콜/형식을 GitHub에서 안전하게 쓸 수 있도록 정리"""
+        if not url:
+            return url
+        url = url.strip()
+        if url.startswith("//"):
+            url = "https:" + url
+        elif url.startswith("http://"):
+            url = url.replace("http://", "https://")
+        return url
+
+    # 우선순위 1: media_thumbnail
     if hasattr(entry, "media_thumbnail"):
         try:
-            url = entry.media_thumbnail[0]["url"]
+            url = entry.media_thumbnail[0].get("url")
+            url = _normalize_url(url)
             if url:
                 return url
         except Exception:
             pass
 
-    # 우선순위 2: enclosure 태그에서 이미지 타입 확인
+    # 우선순위 2: enclosures
     if hasattr(entry, "enclosures") and entry.enclosures:
         for enclosure in entry.enclosures:
             if enclosure.get("type", "").startswith("image/"):
-                url = enclosure.get("url")
+                url = _normalize_url(enclosure.get("url"))
                 if url:
                     return url
 
-    # 우선순위 3: 본문(description)에서 첫 번째 이미지 추출
+    # 우선순위 3: description 내 첫 번째 <img>
     if hasattr(entry, "description") and entry.description:
         img_match = re.search(r'<img[^>]+src="([^"]+)"', entry.description)
         if img_match:
-            url = img_match.group(1)
-            # //로 시작하는 경우 프로토콜 보정
-            if url.startswith("//"):
-                url = "https:" + url
-            return url
+            url = _normalize_url(img_match.group(1))
+            if url:
+                return url
 
-    # 모두 없을 경우 기본 이미지 반환 (꺾쇠 없이 순수 URL만)
-    return "https://github.com/user-attachments/assets/9ffcad01-a362-4ad3-b3eb-f648be5d75de"
+    # 모두 없을 경우 기본 이미지 (공용 placeholder)
+    return "https://via.placeholder.com/300x200?text=No+Image"
 
 
 def format_date(date_str: str) -> str:
@@ -66,7 +76,7 @@ def format_date(date_str: str) -> str:
 
 
 def create_blog_table(feed_url: str, max_posts: int = 6) -> str:
-    """RSS 피드에서 블로그 글을 가져와 3x2 테이블 형태의 마크다운 생성"""
+    """RSS 피드에서 블로그 글을 가져와 3열 테이블 형태의 마크다운 생성"""
 
     # RSS 피드 파싱
     feed = feedparser.parse(feed_url)
@@ -75,7 +85,7 @@ def create_blog_table(feed_url: str, max_posts: int = 6) -> str:
     if not entries:
         return "| | | |\n|---|---|---|\n| 최근 글이 없습니다. | | |\n"
 
-    # 마크다운 테이블 헤더 (3열 고정)
+    # 마크다운 테이블 헤더 (3열)
     table = "| | | |\n"
     table += "|---|---|---|\n"
 
@@ -86,15 +96,18 @@ def create_blog_table(feed_url: str, max_posts: int = 6) -> str:
 
         for entry in row_entries:
             # 각 글의 정보 추출
-            thumbnail = get_thumbnail(entry)                   # 썸네일 이미지
-            title = entry.title                                # 글 제목
-            link = entry.link                                  # 글 링크
+            thumbnail = get_thumbnail(entry)                    # 썸네일 이미지
+            title = entry.title                                 # 글 제목
+            link = entry.link                                   # 글 링크
             description = clean_html(entry.get("description", ""))[:50] + "..."
-            pub_date = format_date(entry.get("published", "")) # 발행일
+            pub_date = format_date(entry.get("published", ""))  # 발행일
+
+            # alt 텍스트에서 특수문자 제거 (렌더링 안정성)
+            safe_title = re.sub(r"[\[\]\(\)`]", "", title)
 
             # 셀 내용: 이미지 + 제목 + 설명 + 날짜
             cell = f"""<a href="{link}">
-<img src="{thumbnail}" alt="{title}" width="300" height="200" />
+<img src="{thumbnail}" alt="{safe_title}" width="300" height="200" />
 </a><br/>
 **[{title}]({link})**  
 {description}  
@@ -120,7 +133,7 @@ def update_readme(readme_path: str, table_content: str) -> None:
         content = f.read()
 
     # 업데이트할 영역을 나타내는 마커
-    # → README.md 에 이 두 줄이 있어야 합니다.
+    # README.md 안에 반드시 아래 두 줄이 있어야 합니다.
     # <!-- BLOG-POST-LIST:START -->
     # <!-- BLOG-POST-LIST:END -->
     start_marker = "<!-- BLOG-POST-LIST:START -->"
