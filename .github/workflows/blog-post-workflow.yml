@@ -9,8 +9,8 @@ on:
 
   push:
     branches:
-      # main 브랜치에 푸시될 때도 실행
-      - main
+      # master 브랜치에 푸시될 때도 실행
+      - master
 
 jobs:
   update-readme:
