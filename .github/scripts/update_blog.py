@@ -187,7 +187,7 @@ def update_readme(readme_path: str, table_content: str) -> None:
 
 
 if __name__ == "__main__":
-    RSS_FEED_URL = "https://medium.com/feed/@heygw44"
+    RSS_FEED_URL = "https://heygw44.tistory.com/rss"
     README_PATH = "README.md"
 
     print("📡 Fetching blog posts from RSS feed...")
