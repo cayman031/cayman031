@@ -10,9 +10,14 @@
 <!-- BLOG-POST-LIST:START -->
 <table>
   <tr>
+    <td><a href="https://heygw44.tistory.com/5"><img src="https://blog.kakaocdn.net/dn/orJys/dJMb9975svW/akAh9dkutAhIzEwZliULi1/img.png" alt="neetcode Longest Consecutive Sequence" width="300" height="200" /></a><br/><strong><a href="https://heygw44.tistory.com/5">[neetcode] Longest Consecutive Sequence</a></strong><br/>https://neetcode.io/problems/longest-consecutive-sequence/question Longest Consecutive Sequence - Ne...<br/>2026.07.08</td>
+    <td><a href="https://heygw44.tistory.com/4"><img src="https://blog.kakaocdn.net/dn/U0S4c/dJMcadipaUq/6FwNhohujdXUAnyMSJB2ck/img.png" alt="neetcode Valid Sudoku" width="300" height="200" /></a><br/><strong><a href="https://heygw44.tistory.com/4">[neetcode] Valid Sudoku</a></strong><br/>https://neetcode.io/problems/valid-sudoku/question Valid Sudoku - NeetCode Leetcode 36. Valid Sudoku...<br/>2026.07.08</td>
     <td><a href="https://heygw44.tistory.com/3"><img src="https://blog.kakaocdn.net/dn/3j8Kl/dJMcahd082d/bP2kWrRn4aUZSW3GOWGqV0/img.png" alt="JDBC JDBC 등장 배경" width="300" height="200" /></a><br/><strong><a href="https://heygw44.tistory.com/3">[JDBC] JDBC 등장 배경</a></strong><br/>JDBC는 왜 필요하고, JPA를 쓰면서도 왜 알아야 하는가 스프링으로 개발할 때 데이터 접근은 대부분 JPA나 MyBatis로 처리한다. 두 도구 모두 SQL과 커넥션 관리를 상...<br/>2026.07.07</td>
+  </tr>
+  <tr>
     <td><a href="https://heygw44.tistory.com/2"><img src="https://blog.kakaocdn.net/dn/Fa3gU/dJMcajizv5Q/iWrkf02KQLRnGSJ6BsQE90/img.png" alt="neetcode Products of Array Except Self" width="300" height="200" /></a><br/><strong><a href="https://heygw44.tistory.com/2">[neetcode] Products of Array Except Self</a></strong><br/>https://neetcode.io/problems/products-of-array-discluding-self/question Products of Array Except Sel...<br/>2026.07.07</td>
     <td><a href="https://heygw44.tistory.com/1"><img src="https://blog.kakaocdn.net/dn/FWsIi/dJMcahZj4qo/yBM0o353YJeoCLZlOmwpjk/img.jpg" alt="Web JWT 기초" width="300" height="200" /></a><br/><strong><a href="https://heygw44.tistory.com/1">[Web] JWT 기초</a></strong><br/>JWT 인증 이해하기: 개념부터 스프링 시큐리티 적용, 토큰 설계까지 JWT는 토큰 기반 인증에서 가장 널리 쓰이는 방식이다. 라이브러리를 붙이면 동작 자체는 금방 만들 수 있지만...<br/>2026.07.07</td>
+    <td></td>
   </tr>
 </table>
 
